@@ -27,8 +27,9 @@ function collisionProbability(n: number): string {
   return `${(p * 100).toFixed(10).replace(/0+$/, "").replace(/\.$/, "")}%`;
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+// 相対URLで呼び出す（本番: nginx が /api/* をバックエンドへルーティング）
+// ローカル開発: next.config.ts の rewrites が /api/* をバックエンドへプロキシ
+const API_BASE = "";
 
 export default function UuidToolPage() {
   const [history, setHistory] = useState<UuidEntry[]>([]);
