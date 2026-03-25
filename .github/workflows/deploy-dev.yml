@@ -66,6 +66,6 @@ jobs:
           push: true
           tags: ${{ env.FRONTEND_IMAGE }}:dev
           build-args: |
-            NEXT_PUBLIC_API_URL=http://localhost:8081
+            NEXT_PUBLIC_API_URL=${{ vars.DEV_NEXT_PUBLIC_API_URL }}
           cache-from: type=gha,scope=frontend-dev
           cache-to: type=gha,scope=frontend-dev,mode=max
