@@ -3,6 +3,7 @@ plugins {
 	kotlin("plugin.spring") version "1.9.25"
 	id("org.springframework.boot") version "3.5.0"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("io.gitlab.arturbosch.detekt") version "1.23.7"
 }
 
 group = "com.kitto"
@@ -36,4 +37,9 @@ kotlin {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+detekt {
+	buildUponDefaultConfig = true
+	config.setFrom(files("$projectDir/config/detekt/detekt.yml"))
 }
