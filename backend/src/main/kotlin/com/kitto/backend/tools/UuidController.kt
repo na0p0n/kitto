@@ -10,7 +10,6 @@ data class UuidResponse(val uuid: String)
 @RestController
 @RequestMapping("/api/tools/uuid")
 class UuidController {
-
     @GetMapping("/generate")
     fun generate(): UuidResponse = UuidResponse(UUID.randomUUID().toString())
 }

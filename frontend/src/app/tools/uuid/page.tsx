@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 type UuidEntry = {
@@ -76,7 +77,7 @@ export default function UuidToolPage() {
         <div className={styles.logo}>
           ki<span>tt</span>o
         </div>
-        <a href="/" className={styles.backLink}>← ツール一覧</a>
+        <Link href="/" className={styles.backLink}>← ツール一覧</Link>
       </header>
 
       <div className={styles.toolHeader}>
