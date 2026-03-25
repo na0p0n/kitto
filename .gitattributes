@@ -1,0 +1,16 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Force LF for shell scripts and config files
+*.sh text eol=lf
+gradlew text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.properties text eol=lf
+
+# Binaries
+*.jar binary
+*.png binary
+*.ico binary
+*.svg binary

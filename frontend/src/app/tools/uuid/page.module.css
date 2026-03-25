@@ -1,0 +1,199 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 0 4rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.logo {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--color-text-primary);
+}
+.logo span {
+  color: var(--color-brand);
+}
+.backLink {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+.backLink:hover {
+  color: var(--color-text-primary);
+}
+
+/* Tool header */
+.toolHeader {
+  padding: 2.5rem 1.5rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.toolTitle {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.4rem;
+}
+.toolDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Generate button */
+.generateSection {
+  padding: 2rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+.generateBtn {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 0.65rem 1.75rem;
+  background: var(--color-text-primary);
+  color: var(--color-background-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.generateBtn:hover {
+  opacity: 0.8;
+}
+.generateBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.latestUuid {
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: var(--color-background-secondary);
+  padding: 0.6rem 0.9rem;
+  border-radius: 6px;
+  word-break: break-all;
+  width: 100%;
+}
+.latestUuidCollision {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.statItem {
+  padding: 1.25rem 1.5rem;
+  border-right: 0.5px solid var(--color-border-tertiary);
+}
+.statItem:last-child {
+  border-right: none;
+}
+.statLabel {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+}
+.statValue {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--color-text-primary);
+}
+.statValueDanger {
+  color: #DC2626;
+}
+.statSub {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+}
+
+/* History */
+.historySection {
+  padding: 1.25rem 1.5rem;
+}
+.historyHeader {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  background: var(--color-background-secondary);
+  font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+  font-size: 13px;
+}
+.historyItemCollision {
+  background: #FEE2E2;
+}
+.historyIndex {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  min-width: 2rem;
+  text-align: right;
+  font-family: inherit;
+}
+.historyUuid {
+  flex: 1;
+  word-break: break-all;
+  color: var(--color-text-primary);
+}
+.collisionBadge {
+  font-family: inherit;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #DC2626;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.emptyState {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  padding: 1rem 0;
+}
+
+@media (max-width: 600px) {
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .statItem:nth-child(2) {
+    border-right: none;
+  }
+  .statItem:nth-child(3) {
+    border-top: 0.5px solid var(--color-border-tertiary);
+  }
+  .statItem:nth-child(4) {
+    border-top: 0.5px solid var(--color-border-tertiary);
+  }
+}
