@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 type UuidEntry = {
@@ -27,8 +28,9 @@ function collisionProbability(n: number): string {
   return `${(p * 100).toFixed(10).replace(/0+$/, "").replace(/\.$/, "")}%`;
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
+// 相対URLで呼び出す（本番: nginx が /api/* をバックエンドへルーティング）
+// ローカル開発: next.config.ts の rewrites が /api/* をバックエンドへプロキシ
+const API_BASE = "";
 
 export default function UuidToolPage() {
   const [history, setHistory] = useState<UuidEntry[]>([]);
@@ -75,7 +77,7 @@ export default function UuidToolPage() {
         <div className={styles.logo}>
           ki<span>tt</span>o
         </div>
-        <a href="/" className={styles.backLink}>← ツール一覧</a>
+        <Link href="/" className={styles.backLink}>← ツール一覧</Link>
       </header>
 
       <div className={styles.toolHeader}>

@@ -1,0 +1,19 @@
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    threshold: 60
+  TooManyFunctions:
+    thresholdInFiles: 20
+    thresholdInClasses: 15
+
+style:
+  MagicNumber:
+    active: false
+  WildcardImport:
+    active: true
+
+naming:
+  FunctionNaming:
+    active: true
