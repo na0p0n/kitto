@@ -33,7 +33,8 @@ class UuidController(private val repository: UuidRepository) {
     @GetMapping("/history")
     fun history(): UuidHistoryResponse {
         val total = repository.count()
-        val history = repository.findTop100ByOrderByCreatedAtDesc()
+        val history = repository
+            .findTop100ByOrderByCreatedAtDesc()
             .map { UuidHistoryItem(uuid = it.uuid, createdAt = it.createdAt) }
         return UuidHistoryResponse(
             total = total,
