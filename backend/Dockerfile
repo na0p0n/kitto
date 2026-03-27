@@ -19,6 +19,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN addgroup -S kitto && adduser -S kitto -G kitto
+RUN mkdir -p /app/data && chown kitto:kitto /app/data
 USER kitto
 
 COPY --from=builder /app/build/libs/*.jar app.jar
