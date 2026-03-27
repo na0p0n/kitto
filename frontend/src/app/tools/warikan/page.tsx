@@ -3,42 +3,9 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-
-type Member = {
-  id: number;
-  name: string;
-  shares: number;
-};
+import { calcWarikan, type Member } from "@/lib/warikan";
 
 let nextId = 1;
-
-function calcWarikan(total: number, members: Member[]): { id: number; name: string; amount: number }[] {
-  const totalShares = members.reduce((s, m) => s + m.shares, 0);
-  if (totalShares === 0) return [];
-
-  const results = members.map((m) => ({
-    id: m.id,
-    name: m.name || `参加者${m.id}`,
-    raw: (total * m.shares) / totalShares,
-    amount: 0,
-  }));
-
-  // Round each down to nearest 10, distribute remainder to highest payer
-  let distributed = 0;
-  results.forEach((r) => {
-    r.amount = Math.floor(r.raw / 10) * 10;
-    distributed += r.amount;
-  });
-
-  const remainder = total - distributed;
-  if (remainder > 0) {
-    // Add remainder to the person with the largest raw share
-    const maxIdx = results.reduce((best, r, i) => (r.raw > results[best].raw ? i : best), 0);
-    results[maxIdx].amount += remainder;
-  }
-
-  return results;
-}
 
 export default function WarikanPage() {
   const [total, setTotal] = useState<string>("");
