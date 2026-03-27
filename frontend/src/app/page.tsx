@@ -44,14 +44,6 @@ const TOOLS: Tool[] = [
     href: "/tools/countdown",
   },
   {
-    icon: "⚖️",
-    iconBg: "#E6F1FB",
-    name: "カロリー計算",
-    desc: "インストール不要。秒で計算できます。",
-    category: "生活",
-    href: "/tools/calorie",
-  },
-  {
     icon: "🎲",
     iconBg: "#F5F5F5",
     name: "次のツール",
