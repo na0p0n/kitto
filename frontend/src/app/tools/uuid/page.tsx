@@ -1,73 +1,79 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 import styles from "./page.module.css";
 
-type UuidEntry = {
+type UuidHistoryItem = {
   uuid: string;
-  isCollision: boolean;
+  createdAt: string;
+};
+
+type HistoryResponse = {
+  total: number;
+  collisions: number;
+  history: UuidHistoryItem[];
+};
+
+type GenerateResponse = {
+  uuid: string;
+  collision: boolean;
 };
 
 // UUID v4: 2^122 possible values
 const UUID_SPACE = 2n ** 122n;
 
-/**
- * Birthday problem approximation:
- * P(collision) ≈ 1 - e^(-n*(n-1) / (2 * N))
- * For display, we show as a percentage with enough precision.
- */
 function collisionProbability(n: number): string {
-  if (n < 2) return "0%";
-  // Use log to avoid bigint float issues: -n*(n-1) / (2 * 2^122)
+  if (n < 2) return "~0%";
   const exponent = -(n * (n - 1)) / (2 * Number(UUID_SPACE));
   const p = 1 - Math.exp(exponent);
-  if (p === 0) return "~0%";
-  // Show in scientific notation when extremely small
+  if (p === 0 || p < 1e-30) return "~0%";
   if (p < 1e-10) return `~${p.toExponential(2)}%`;
   return `${(p * 100).toFixed(10).replace(/0+$/, "").replace(/\.$/, "")}%`;
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
-
 export default function UuidToolPage() {
-  const [history, setHistory] = useState<UuidEntry[]>([]);
-  const [seenSet, setSeenSet] = useState<Set<string>>(new Set());
-  const [collisionCount, setCollisionCount] = useState(0);
+  const [historyData, setHistoryData] = useState<HistoryResponse | null>(null);
+  const [myUuids, setMyUuids] = useState<Set<string>>(new Set());
+  const [latest, setLatest] = useState<{ uuid: string; collision: boolean } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      const res = await fetch("/api/tools/uuid/history");
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: HistoryResponse = await res.json();
+      setHistoryData(data);
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
 
   const generate = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_BASE}/api/tools/uuid/generate`);
+      const res = await fetch("/api/tools/uuid/generate");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: { uuid: string } = await res.json();
-      const { uuid } = data;
-
-      const isCollision = seenSet.has(uuid);
-
-      setSeenSet((prev) => new Set(prev).add(uuid));
-      setHistory((prev) => [{ uuid, isCollision }, ...prev]);
-      if (isCollision) setCollisionCount((c) => c + 1);
+      const data: GenerateResponse = await res.json();
+      setLatest(data);
+      setMyUuids((prev) => new Set(prev).add(data.uuid));
+      await fetchHistory();
     } catch (e) {
       setError("生成に失敗しました。バックエンドが起動しているか確認してください。");
       console.error(e);
     } finally {
       setLoading(false);
     }
-  }, [seenSet]);
+  }, [fetchHistory]);
 
-  const total = history.length;
-  const actualRate =
-    total === 0
-      ? "—"
-      : collisionCount === 0
-        ? "0 / " + total
-        : `${collisionCount} / ${total}`;
+  const total = historyData?.total ?? 0;
   const theoProbability = collisionProbability(total);
-  const latest = history[0] ?? null;
 
   return (
     <div className={styles.page}>
@@ -75,14 +81,14 @@ export default function UuidToolPage() {
         <div className={styles.logo}>
           ki<span>tt</span>o
         </div>
-        <a href="/" className={styles.backLink}>← ツール一覧</a>
+        <Link href="/" className={styles.backLink}>← ツール一覧</Link>
       </header>
 
       <div className={styles.toolHeader}>
         <h1 className={styles.toolTitle}>🔑 UUID 衝突チェッカー</h1>
         <p className={styles.toolDesc}>
           ボタンを押すたびに UUID v4 を生成します。<br />
-          理論上衝突はほぼ起きませんが、実際に試して確かめてみましょう。
+          全ユーザーの生成履歴を共有し、実際に衝突が起きるか確かめてみましょう。
         </p>
       </div>
 
@@ -100,12 +106,12 @@ export default function UuidToolPage() {
         {latest && (
           <div
             className={
-              latest.isCollision
+              latest.collision
                 ? `${styles.latestUuid} ${styles.latestUuidCollision}`
                 : styles.latestUuid
             }
           >
-            {latest.isCollision && "💥 衝突！ "}
+            {latest.collision && "💥 衝突！ "}
             {latest.uuid}
           </div>
         )}
@@ -113,25 +119,23 @@ export default function UuidToolPage() {
 
       <div className={styles.stats}>
         <div className={styles.statItem}>
-          <div className={styles.statLabel}>生成数</div>
+          <div className={styles.statLabel}>累計生成数</div>
           <div className={styles.statValue}>{total.toLocaleString()}</div>
+        </div>
+        <div className={styles.statItem}>
+          <div className={styles.statLabel}>今セッション</div>
+          <div className={styles.statValue}>{myUuids.size.toLocaleString()}</div>
         </div>
         <div className={styles.statItem}>
           <div className={styles.statLabel}>衝突数</div>
           <div
             className={
-              collisionCount > 0
+              (historyData?.collisions ?? 0) > 0
                 ? `${styles.statValue} ${styles.statValueDanger}`
                 : styles.statValue
             }
           >
-            {collisionCount}
-          </div>
-        </div>
-        <div className={styles.statItem}>
-          <div className={styles.statLabel}>実際の衝突率</div>
-          <div className={styles.statValue} style={{ fontSize: 16 }}>
-            {actualRate}
+            {historyData?.collisions ?? 0}
           </div>
         </div>
         <div className={styles.statItem}>
@@ -145,29 +149,32 @@ export default function UuidToolPage() {
 
       <div className={styles.historySection}>
         <div className={styles.historyHeader}>
-          履歴（新しい順）
+          共有履歴（新しい順・最大100件）
+          <button className={styles.refreshBtn} onClick={fetchHistory}>
+            更新
+          </button>
         </div>
-        {history.length === 0 ? (
+        {!historyData || historyData.history.length === 0 ? (
           <div className={styles.emptyState}>
             まだ UUID が生成されていません。
           </div>
         ) : (
           <div className={styles.historyList}>
-            {history.map((entry, i) => (
+            {historyData.history.map((item, i) => (
               <div
-                key={`${entry.uuid}-${i}`}
+                key={item.uuid}
                 className={
-                  entry.isCollision
-                    ? `${styles.historyItem} ${styles.historyItemCollision}`
+                  myUuids.has(item.uuid)
+                    ? `${styles.historyItem} ${styles.historyItemMine}`
                     : styles.historyItem
                 }
               >
                 <span className={styles.historyIndex}>
                   {total - i}
                 </span>
-                <span className={styles.historyUuid}>{entry.uuid}</span>
-                {entry.isCollision && (
-                  <span className={styles.collisionBadge}>衝突</span>
+                <span className={styles.historyUuid}>{item.uuid}</span>
+                {myUuids.has(item.uuid) && (
+                  <span className={styles.mineBadge}>自分</span>
                 )}
               </div>
             ))}

@@ -3,6 +3,7 @@ FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
 COPY gradlew .
+RUN chmod +x gradlew
 COPY gradle gradle
 COPY build.gradle.kts .
 COPY settings.gradle.kts .
@@ -18,6 +19,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 RUN addgroup -S kitto && adduser -S kitto -G kitto
+RUN mkdir -p /app/data && chown kitto:kitto /app/data
 USER kitto
 
 COPY --from=builder /app/build/libs/*.jar app.jar

@@ -1,0 +1,270 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 0 4rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.logo {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--color-text-primary);
+}
+.logo span {
+  color: var(--color-brand);
+}
+.backLink {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+.backLink:hover {
+  color: var(--color-text-primary);
+}
+
+/* Tool header */
+.toolHeader {
+  padding: 2.5rem 1.5rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.toolTitle {
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.4rem;
+}
+.toolDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+/* Input section */
+.inputSection {
+  padding: 2rem 1.5rem;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.totalInput {
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 500;
+  width: 100%;
+  max-width: 280px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid var(--color-border-tertiary);
+  border-radius: 8px;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  outline: none;
+  letter-spacing: -0.5px;
+}
+.totalInput:focus {
+  border-color: var(--color-text-secondary);
+}
+
+/* Member list */
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.memberNum {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  min-width: 1.2rem;
+  text-align: right;
+}
+
+.nameInput {
+  font-family: inherit;
+  font-size: 14px;
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--color-border-tertiary);
+  border-radius: 6px;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  outline: none;
+  min-width: 0;
+}
+.nameInput:focus {
+  border-color: var(--color-text-secondary);
+}
+
+.sharesControl {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-background-secondary);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.sharesBtn {
+  font-family: inherit;
+  font-size: 14px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.sharesBtn:hover:not(:disabled) {
+  background: var(--color-border-tertiary);
+}
+.sharesBtn:disabled {
+  color: var(--color-text-tertiary);
+  cursor: not-allowed;
+}
+
+.sharesValue {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.removeBtn {
+  font-family: inherit;
+  font-size: 14px;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.removeBtn:hover {
+  color: #DC2626;
+  background: #FEE2E2;
+}
+
+.addBtn {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  background: none;
+  border: 1px dashed var(--color-border-tertiary);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  margin-top: 4px;
+  align-self: flex-start;
+}
+.addBtn:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+/* Result section */
+.resultSection {
+  padding: 2rem 1.5rem;
+}
+
+.resultHeader {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.75rem;
+}
+
+.resultSummary {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 1rem;
+}
+.resultSummary strong {
+  color: var(--color-text-primary);
+}
+
+.resultList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-background-secondary);
+  border-radius: 8px;
+}
+
+.resultName {
+  flex: 1;
+  font-size: 14px;
+  color: var(--color-text-primary);
+}
+
+.resultShares {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.resultAmount {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--color-text-primary);
+}
+.yen {
+  font-size: 13px;
+  font-weight: 400;
+  margin-left: 1px;
+}
+
+.resultCheck {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  padding: 0 0.25rem;
+}
+
+@media (max-width: 600px) {
+  .totalInput {
+    max-width: 100%;
+  }
+}
