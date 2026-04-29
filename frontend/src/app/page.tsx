@@ -44,13 +44,13 @@ const TOOLS: Tool[] = [
     href: "/tools/countdown",
   },
   {
-    icon: "🎲",
-    iconBg: "#F5F5F5",
-    name: "次のツール",
-    desc: "準備中です。お楽しみに。",
-    badge: { label: "準備中", type: "soon" },
+    icon: "🗺",
+    iconBg: "#FFF0D8",
+    name: "どこ行く？",
+    desc: "チェーン店をランダム抽選して「突然の旅」の目的地を決める。",
+    badge: { label: "新着", type: "new" },
     category: "おもしろ",
-    soon: true,
+    href: "/tools/destination-roulette",
   },
 ];
 
