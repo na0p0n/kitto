@@ -1,0 +1,512 @@
+[
+  {
+    "id": 1,
+    "title": "基本のNull安全アクセス",
+    "description": "以下の関数はNullPointerExceptionが発生する可能性があります。正しい修正方法を選んでください。",
+    "buggyCode": "fun getLength(text: String?): Int {\n    return text.length\n}",
+    "options": [
+      { "id": "A", "text": "return text!!.length" },
+      { "id": "B", "text": "return text?.length ?: 0" },
+      { "id": "C", "text": "return text.length ?: 0" },
+      { "id": "D", "text": "return text?.length" }
+    ],
+    "correctOptionId": "B",
+    "hint": "textがnullのとき、Int型を返すにはどうすればよいですか？",
+    "explanation": "B が正解です。\n\n「?.」はnullセーフ演算子で、textがnullならnullを返します。しかし戻り値の型はInt（非nullable）なので、「?: 0」でnull時のデフォルト値を指定する必要があります。\n\n・A: 「!!」はnullを強制的に非nullにしますが、textがnullの場合は実行時にNullPointerExceptionが発生します\n・C: String? に直接 .length は呼べないためコンパイルエラーになります\n・D: 戻り値がInt?になり、関数のシグネチャ「Int」と型が合わずコンパイルエラーになります",
+    "difficulty": "EASY",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 2,
+    "title": "Elvis演算子でデフォルト値",
+    "description": "ユーザー名がnullの場合にデフォルト値を返したいですが、このコードはコンパイルエラーです。",
+    "buggyCode": "fun getDisplayName(name: String?): String {\n    return name\n}",
+    "options": [
+      { "id": "A", "text": "return name ?: \"名無し\"" },
+      { "id": "B", "text": "return name.toString()" },
+      { "id": "C", "text": "return name!!" },
+      { "id": "D", "text": "return if (name != null) name else null" }
+    ],
+    "correctOptionId": "A",
+    "hint": "「?:」はElvis演算子です。左辺がnullのとき右辺の値を返します。",
+    "explanation": "A が正解です。\n\nElvis演算子「?:」は左辺がnullのとき右辺の値を返します。nameがnullなら「名無し」を返すことで、String型を確実に返せます。\n\n・B: toString() は null に対して「\"null\"」という文字列を返してしまいます\n・C: 「!!」はnullの場合にNullPointerExceptionが発生します\n・D: else節でnullを返しているためString?になり、戻り値型Stringと合いません（コンパイルエラー）",
+    "difficulty": "EASY",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 3,
+    "title": "Safe Cast演算子 as?",
+    "description": "オブジェクトのキャストが失敗すると例外が発生します。安全にキャストする方法を選んでください。",
+    "buggyCode": "fun printUpperCase(obj: Any) {\n    val text = obj as String\n    println(text.uppercase())\n}",
+    "options": [
+      { "id": "A", "text": "val text = obj as? String; text?.let { println(it.uppercase()) }" },
+      { "id": "B", "text": "val text = obj.toString(); println(text.uppercase())" },
+      { "id": "C", "text": "val text = (String) obj; println(text.uppercase())" },
+      { "id": "D", "text": "val text = obj as String?; println(text!!.uppercase())" }
+    ],
+    "correctOptionId": "A",
+    "hint": "「as?」は失敗した場合にnullを返す安全なキャスト演算子です。",
+    "explanation": "A が正解です。\n\n「as?」はキャストが失敗した場合にnullを返します。その後「?.let」でnullでない場合のみ処理を実行します。\n\n・B: toString() はキャストではなく文字列変換です。Intや他の型でも動いてしまい、意図と異なります\n・C: Javaのキャスト構文は Kotlin では使えません（コンパイルエラー）\n・D: 「as String?」は nullable キャストですが、失敗時は依然として ClassCastException が発生します",
+    "difficulty": "MEDIUM",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 4,
+    "title": "varプロパティとスマートキャスト",
+    "description": "以下のコードはコンパイルエラーです。スマートキャストが機能しない理由を理解して修正してください。",
+    "buggyCode": "class Session {\n    var currentUser: User? = null\n}\n\nfun getUserName(session: Session): String {\n    if (session.currentUser != null) {\n        return session.currentUser.name\n    }\n    return \"ゲスト\"\n}",
+    "options": [
+      { "id": "A", "text": "val user = session.currentUser; return if (user != null) user.name else \"ゲスト\"" },
+      { "id": "B", "text": "return session.currentUser?.name ?: \"ゲスト\"" },
+      { "id": "C", "text": "if (session.currentUser is User) return session.currentUser.name" },
+      { "id": "D", "text": "return session.currentUser!!.name" }
+    ],
+    "correctOptionId": "A",
+    "hint": "varプロパティは別スレッドで変更される可能性があるため、スマートキャストが適用されません。ローカル変数に代入することで解決できます。",
+    "explanation": "A が正解です。\n\nKotlinのスマートキャストは、nullチェック後に変数が変更されない保証がある場合にのみ機能します。varプロパティは別スレッドで変更される可能性があるため、コンパイラはスマートキャストを許可しません。ローカルvalに代入することでスマートキャストが機能します。\n\n・B: 動作はしますが、スマートキャストを使わない別のアプローチです\n・C: varプロパティへのis checkも同じ理由でスマートキャストが機能しません\n・D: !!は nullが来ると NPE が発生します",
+    "difficulty": "MEDIUM",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 5,
+    "title": "letスコープ関数でNull安全処理",
+    "description": "以下のコードはコンパイルエラーです。nullの場合は処理をスキップしたい。最もKotlinらしい修正を選んでください。",
+    "buggyCode": "fun sendEmail(email: String?) {\n    val trimmed = email.trim()\n    println(\"Sending to: $trimmed\")\n}",
+    "options": [
+      { "id": "A", "text": "email?.let { println(\"Sending to: ${it.trim()}\") }" },
+      { "id": "B", "text": "email?.trim().let { println(\"Sending to: $it\") }" },
+      { "id": "C", "text": "email!!.trim(); println(\"Sending to: $email\")" },
+      { "id": "D", "text": "println(\"Sending to: ${email.trim() ?: \"\"}\") " }
+    ],
+    "correctOptionId": "A",
+    "hint": "「?.let { }」はnullでない場合のみブロックを実行します。",
+    "explanation": "A が正解です。\n\n「?.let」はnullセーフ演算子と組み合わせることで、nullでない場合のみブロックを実行します。emailがnullなら何もしないという意図が明確に表現できます。\n\n・B: 「email?.trim()」でString?が返り、letはnullでも実行されるため「Sending to: null」と表示される場合があります\n・C: !!はnullだとNPEが発生します\n・D: email.trim()はString?に直接呼べないためコンパイルエラーになります",
+    "difficulty": "MEDIUM",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 6,
+    "title": "Nullableリストの安全な操作",
+    "description": "リストがnullの場合と空の場合の両方で例外が発生します。正しい修正を選んでください。",
+    "buggyCode": "fun getFirstItem(items: List<String>?): String {\n    return items.first()\n}",
+    "options": [
+      { "id": "A", "text": "return items?.firstOrNull() ?: \"なし\"" },
+      { "id": "B", "text": "return items?.first() ?: \"なし\"" },
+      { "id": "C", "text": "return items!!.first()" },
+      { "id": "D", "text": "return items?.get(0) ?: \"なし\"" }
+    ],
+    "correctOptionId": "A",
+    "hint": "リストがnullの場合と、nullでも空の場合の両方を考えてください。",
+    "explanation": "A が正解です。\n\n「?.firstOrNull()」はnullセーフ（?.）でリストがnullならnullを返し、空リストでも例外を投げずnullを返します。最後の「?: \"なし\"」でデフォルト値を提供します。\n\n・B: 「?.first()」はリストがnullなら安全ですが、リストが空の場合にNoSuchElementExceptionが発生します\n・C: !!はリストがnullのときNPE、空のときNoSuchElementExceptionが発生します\n・D: 「?.get(0)」はリストが空のときIndexOutOfBoundsExceptionが発生します",
+    "difficulty": "MEDIUM",
+    "category": "NULL_SAFETY"
+  },
+  {
+    "id": 7,
+    "title": "valとvarの違い",
+    "description": "以下のコードはコンパイルエラーです。問題のある箇所を修正してください。",
+    "buggyCode": "fun sumTo(n: Int): Int {\n    val result = 0\n    for (i in 1..n) {\n        result += i\n    }\n    return result\n}",
+    "options": [
+      { "id": "A", "text": "var result = 0" },
+      { "id": "B", "text": "const val result = 0" },
+      { "id": "C", "text": "val result: Int = 0" },
+      { "id": "D", "text": "lateinit var result: Int" }
+    ],
+    "correctOptionId": "A",
+    "hint": "「val」は再代入不可（immutable）、「var」は再代入可能（mutable）です。",
+    "explanation": "A が正解です。\n\n「val」は一度代入すると変更できません（Javaのfinalに相当）。ループ内でresultを変更したいため「var」を使います。\n\n・B: 「const val」はコンパイル時定数で、関数内では使えず、ループ変数として変更もできません\n・C: 型アノテーションを追加しても「val」のため再代入できません\n・D: 「lateinit」はプリミティブ型（Int）には使えません",
+    "difficulty": "EASY",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 8,
+    "title": "文字列テンプレートでプロパティアクセス",
+    "description": "以下のコードは期待した出力になりません。正しい修正方法を選んでください。",
+    "buggyCode": "data class User(val firstName: String, val lastName: String)\n\nfun greet(user: User) {\n    println(\"こんにちは、$user.firstName $user.lastName さん\")\n}",
+    "options": [
+      { "id": "A", "text": "println(\"こんにちは、${user.firstName} ${user.lastName} さん\")" },
+      { "id": "B", "text": "println(\"こんにちは、$user?.firstName $user?.lastName さん\")" },
+      { "id": "C", "text": "println(\"こんにちは、\" + user.firstName + \" \" + user.lastName + \" さん\")" },
+      { "id": "D", "text": "println(\"こんにちは、$user[firstName] $user[lastName] さん\")" }
+    ],
+    "correctOptionId": "A",
+    "hint": "「$variable」は変数全体、「${expression}」は式を埋め込みます。",
+    "explanation": "A が正解です。\n\n「$user.firstName」はuserオブジェクト全体（toString()の結果）を埋め込み、その後に「.firstName」というテキストを追加します。プロパティにアクセスするには「${user.firstName}」のように波括弧で囲む必要があります。\n\n・B: UserはnullableではないのでSafe-callは不要ですし、「$user?.firstName」は意味が違います\n・C: 動作はしますが、文字列連結はKotlinでは非推奨です\n・D: 配列アクセス構文は文字列テンプレートでは使えません",
+    "difficulty": "EASY",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 9,
+    "title": "データクラスのイミュータブルな更新",
+    "description": "以下のコードはコンパイルエラーです。データクラスのプロパティを更新する正しい方法を選んでください。",
+    "buggyCode": "data class Player(val name: String, val score: Int)\n\nfun addScore(player: Player, points: Int): Player {\n    player.score += points\n    return player\n}",
+    "options": [
+      { "id": "A", "text": "return player.copy(score = player.score + points)" },
+      { "id": "B", "text": "player.score = player.score + points; return player" },
+      { "id": "C", "text": "return player.apply { score += points }" },
+      { "id": "D", "text": "val newPlayer = player; newPlayer.score += points; return newPlayer" }
+    ],
+    "correctOptionId": "A",
+    "hint": "データクラスには「copy()」メソッドが自動生成されます。",
+    "explanation": "A が正解です。\n\nKotlinのデータクラスは「copy()」メソッドを自動生成します。変更したいプロパティだけ指定し、残りは元の値がコピーされます。イミュータブルなデータの更新に最適です。\n\n・B: valプロパティは再代入できないためコンパイルエラーです\n・C: applyブロック内でも valプロパティへの代入はできません\n・D: 別変数に代入しても同じオブジェクトを参照するためvalの制約は変わりません",
+    "difficulty": "MEDIUM",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 10,
+    "title": "when式の網羅性（sealed class）",
+    "description": "以下のコードはコンパイルエラーです。sealed classの全ケースを網羅していないことが原因です。",
+    "buggyCode": "sealed class Shape\nclass Circle(val radius: Double) : Shape()\nclass Rectangle(val w: Double, val h: Double) : Shape()\nclass Triangle(val base: Double, val h: Double) : Shape()\n\nfun area(shape: Shape): Double = when (shape) {\n    is Circle -> Math.PI * shape.radius * shape.radius\n    is Rectangle -> shape.w * shape.h\n}",
+    "options": [
+      { "id": "A", "text": "is Triangle -> shape.base * shape.h / 2 を追加する" },
+      { "id": "B", "text": "else -> 0.0 を追加する" },
+      { "id": "C", "text": "戻り値の型を Double? に変更する" },
+      { "id": "D", "text": "when式をif-elseに書き換える" }
+    ],
+    "correctOptionId": "A",
+    "hint": "sealed classのwhen式は全サブクラスを網羅する必要があります。最も型安全なアプローチは何でしょうか？",
+    "explanation": "A が正解です。\n\nsealedクラスのwhen式で全サブクラスを明示的に処理することで、将来Shapeに新しいサブクラスが追加されたときにコンパイルエラーで検知できます。\n\n・B: elseは動作しますが、新しいShapeが追加されても気づけないためバグを埋め込むリスクがあります\n・C: 戻り値の型変更では網羅性の問題は解決しません\n・D: if-elseでも網羅性チェックはされません",
+    "difficulty": "MEDIUM",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 11,
+    "title": "イミュータブルリストへの追加",
+    "description": "以下のコードはコンパイルエラーです。リストに要素を追加できるよう修正してください。",
+    "buggyCode": "fun buildMenu(): List<String> {\n    val items = listOf(\"ホーム\", \"設定\")\n    items.add(\"プロフィール\")\n    return items\n}",
+    "options": [
+      { "id": "A", "text": "val items = mutableListOf(\"ホーム\", \"設定\")" },
+      { "id": "B", "text": "var items = listOf(\"ホーム\", \"設定\")" },
+      { "id": "C", "text": "val items = arrayOf(\"ホーム\", \"設定\")" },
+      { "id": "D", "text": "val items = listOf(\"ホーム\", \"設定\").toList()" }
+    ],
+    "correctOptionId": "A",
+    "hint": "「listOf」は読み取り専用のリストを作ります。変更可能なリストにはどの関数を使いますか？",
+    "explanation": "A が正解です。\n\n「listOf()」はイミュータブル（変更不可）なListを返します。要素の追加には「mutableListOf()」でMutableListを生成する必要があります。\n\n・B: 変数をvarにしても、Listインターフェースはaddメソッドを持たないため変わりません\n・C: 配列（Array）はsizeが固定でaddメソッドはありません\n・D: toList()はListのコピーを作るだけで、やはりイミュータブルです",
+    "difficulty": "EASY",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 12,
+    "title": "varプロパティへのスマートキャスト（応用）",
+    "description": "以下のコードはコンパイルエラーです。スマートキャストが機能しない原因を理解して修正してください。",
+    "buggyCode": "class Config {\n    var maxRetries: Int? = null\n}\n\nfun getRetries(config: Config): Int {\n    if (config.maxRetries != null) {\n        return config.maxRetries * 2\n    }\n    return 3\n}",
+    "options": [
+      { "id": "A", "text": "val retries = config.maxRetries; return if (retries != null) retries * 2 else 3" },
+      { "id": "B", "text": "return (config.maxRetries ?: 3) * 2" },
+      { "id": "C", "text": "return config.maxRetries!! * 2" },
+      { "id": "D", "text": "if (config.maxRetries is Int) return config.maxRetries * 2" }
+    ],
+    "correctOptionId": "A",
+    "hint": "varプロパティはスレッド間で変更される可能性があります。ローカル変数を使うとスマートキャストが機能します。",
+    "explanation": "A が正解です。\n\nvarプロパティはマルチスレッド環境で別スレッドから変更される可能性があるため、nullチェック後でもコンパイラはスマートキャストを許可しません。ローカルvalに代入することでスマートキャストが機能します。\n\n・B: 動作しますが意味が変わります（nullの場合は3ではなく3*2=6を返す）\n・C: nullのときNullPointerExceptionが発生します\n・D: varプロパティへのis-checkでも同じ理由でスマートキャストが機能しません",
+    "difficulty": "MEDIUM",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 13,
+    "title": "companion objectでクラスレベル定数",
+    "description": "以下のコードはコンパイルエラーです。クラスレベルの定数に静的にアクセスする正しい方法を選んでください。",
+    "buggyCode": "class ApiClient {\n    val BASE_URL = \"https://api.example.com\"\n    val TIMEOUT_MS = 30000L\n\n    fun get(path: String): String = \"\"\n}\n\n// 別の場所から\nval url = ApiClient.BASE_URL",
+    "options": [
+      { "id": "A", "text": "companion object { const val BASE_URL = \"...\"; const val TIMEOUT_MS = 30000L } をクラス内に追加" },
+      { "id": "B", "text": "@JvmStatic をBASE_URLに追加する" },
+      { "id": "C", "text": "ApiClientをobjectに変更する" },
+      { "id": "D", "text": "BASE_URLをpublicにする" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Kotlinでクラスに静的メンバを持たせるには「companion object」を使います。",
+    "explanation": "A が正解です。\n\nKotlinにはJavaのようなstaticメンバがありません。「companion object」はクラスに対してシングルトンのオブジェクトを持たせる機能で、静的メンバのように「クラス名.メンバ名」でアクセスできます。\n\n・B: @JvmStaticはcompanion object内のメンバをJava側からstaticとして呼べるようにするものです。単独では使えません\n・C: objectにするとシングルトンになり、クラスのインスタンスを作れなくなります\n・D: アクセス修飾子はインスタンスメンバか静的メンバかとは関係ありません",
+    "difficulty": "MEDIUM",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 14,
+    "title": "拡張関数の定義",
+    "description": "「word.isPalindrome()」のように呼び出したいが、コンパイルエラーになります。正しい拡張関数の定義を選んでください。",
+    "buggyCode": "fun isPalindrome(s: String): Boolean = s == s.reversed()\n\nval word = \"level\"\nprintln(word.isPalindrome())",
+    "options": [
+      { "id": "A", "text": "fun String.isPalindrome(): Boolean = this == this.reversed()" },
+      { "id": "B", "text": "fun isPalindrome(String s): Boolean = s == s.reversed()" },
+      { "id": "C", "text": "operator fun String.isPalindrome(): Boolean = this == this.reversed()" },
+      { "id": "D", "text": "@Extension fun isPalindrome(s: String): Boolean = s == s.reversed()" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Kotlinの拡張関数は「fun レシーバー型.関数名()」の形で定義します。",
+    "explanation": "A が正解です。\n\nKotlinの拡張関数は「fun 型名.関数名(): 戻り値型 { }」の形で定義します。関数内では「this」でレシーバーオブジェクト（この場合はString）にアクセスできます。\n\n・B: Javaスタイルの構文はKotlinでは使えません（コンパイルエラー）\n・C: operatorはKotlinの演算子オーバーロード用で、拡張関数の定義に使うものではありません\n・D: @Extension というアノテーションはKotlinには存在しません",
+    "difficulty": "MEDIUM",
+    "category": "KOTLIN_BASICS"
+  },
+  {
+    "id": 15,
+    "title": "@Serviceアノテーションの欠落",
+    "description": "起動時に「NoSuchBeanDefinitionException」が発生します。原因と修正方法を選んでください。",
+    "buggyCode": "class UserService {\n    fun findById(id: Long): User? = null\n}\n\n@RestController\nclass UserController(\n    private val service: UserService\n) {\n    @GetMapping(\"/users/{id}\")\n    fun getUser(@PathVariable id: Long) = service.findById(id)\n}",
+    "options": [
+      { "id": "A", "text": "@Service を UserService に追加する" },
+      { "id": "B", "text": "@Autowired を UserController のコンストラクタに追加する" },
+      { "id": "C", "text": "@Bean を findById メソッドに追加する" },
+      { "id": "D", "text": "@Component を UserController に追加する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Springがクラスをビーンとして管理するためには適切なアノテーションが必要です。",
+    "explanation": "A が正解です。\n\n@Service（または@Component）アノテーションがないクラスはSpringがビーンとして認識せず、DIコンテナに登録されません。@ServiceはSpringのDIコンテナにビーンとして登録するためのアノテーションです。\n\n・B: @AutowiredはSpring 4.3以降、単一コンストラクタには不要です。しかしビーンが存在しなければ@Autowiredを付けても解決しません\n・C: @Beanは@Configurationクラスのメソッドに付けるもので、サービスクラスのメソッドには使いません\n・D: @RestControllerはすでに@Componentを含んでいます。UserControllerの問題ではありません",
+    "difficulty": "EASY",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 16,
+    "title": "@RequestBodyの欠落",
+    "description": "POSTリクエストを送ってもリクエストボディがバインドされません。修正方法を選んでください。",
+    "buggyCode": "@RestController\n@RequestMapping(\"/api/users\")\nclass UserController(private val service: UserService) {\n\n    @PostMapping\n    fun create(request: CreateUserRequest): User {\n        return service.create(request)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@RequestBody を request パラメータの前に追加する" },
+      { "id": "B", "text": "@RequestParam を request パラメータの前に追加する" },
+      { "id": "C", "text": "@ModelAttribute を request パラメータの前に追加する" },
+      { "id": "D", "text": "@Valid を request パラメータの前に追加する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "JSONボディをKotlinオブジェクトにマッピングするアノテーションはどれですか？",
+    "explanation": "A が正解です。\n\n@RequestBodyはHTTPリクエストのボディ（JSONなど）をメソッドパラメータにバインドします。これがないとSpringはリクエストボディを無視します。\n\n・B: @RequestParamはURLクエリパラメータやフォームフィールド用です（例: ?name=foo）\n・C: @ModelAttributeはHTMLフォーム送信のバインドに使います\n・D: @Validはバリデーション（入力値検証）用で、バインディングとは別の機能です",
+    "difficulty": "EASY",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 17,
+    "title": "@Controllerと@RestControllerの違い",
+    "description": "このエンドポイントを呼び出すと、JSONではなくテンプレートエラーが返されます。修正方法を選んでください。",
+    "buggyCode": "@Controller\n@RequestMapping(\"/api/items\")\nclass ItemController(private val service: ItemService) {\n\n    @GetMapping\n    fun getAll(): List<Item> {\n        return service.findAll()\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@Controller を @RestController に変更する" },
+      { "id": "B", "text": "@ResponseStatus(HttpStatus.OK) を getAll() に追加する" },
+      { "id": "C", "text": "@RequestMapping に produces = [\"application/json\"] を追加する" },
+      { "id": "D", "text": "戻り値の型を ResponseEntity<List<Item>> に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "@RestController = @Controller + @ResponseBody です。",
+    "explanation": "A が正解です。\n\n@Controllerは戻り値をViewテンプレートの名前として解釈します。JSONとして返すには@ResponseBodyが必要です。@RestControllerは@Controllerと@ResponseBodyを組み合わせたアノテーションで、全メソッドの戻り値がレスポンスボディとして扱われます。\n\n・B: @ResponseStatusはHTTPステータスコードの設定です。ボディのシリアライズには関係ありません\n・C: producesは返却するメディアタイプを指定しますが、@ResponseBodyなしではViewを探しにいきます\n・D: ResponseEntityも@ResponseBodyなしでは機能しません",
+    "difficulty": "EASY",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 18,
+    "title": "@PathVariableの変数名不一致",
+    "description": "このエンドポイントに{productId}でリクエストすると400エラーが発生します。原因を特定して修正してください。",
+    "buggyCode": "@RestController\n@RequestMapping(\"/api/products\")\nclass ProductController(private val service: ProductService) {\n\n    @GetMapping(\"/{productId}\")\n    fun getProduct(@PathVariable id: Long): Product {\n        return service.findById(id)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@PathVariable id を @PathVariable productId に変更する" },
+      { "id": "B", "text": "@PathVariable id を @PathVariable(\"productId\") id に変更する" },
+      { "id": "C", "text": "パスを \"/{productId}\" から \"/{id}\" に変更する" },
+      { "id": "D", "text": "@RequestParam id: Long を使う" }
+    ],
+    "correctOptionId": "A",
+    "hint": "@PathVariableのパラメータ名はパステンプレートの変数名と一致する必要があります。",
+    "explanation": "A が正解です（Bも正解ですが、Aがよりシンプルです）。\n\n@PathVariableはデフォルトでパラメータ変数名をパステンプレートの変数名として解決します。{productId}というパスに対して変数名idを使っているため名前が一致しません。\n\n・A: パラメータ名をproductIdに揃えるシンプルな修正です\n・B: @PathVariable(\"productId\") でも明示的に名前を指定できます（Aと同様に正しい）\n・C: パス側を変更する方法も有効ですが、APIの仕様変更を伴います\n・D: @RequestParamはURLクエリパラメータ用で、パスパラメータには使えません",
+    "difficulty": "EASY",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 19,
+    "title": "HTTPメソッドの誤り（GET vs POST）",
+    "description": "リソースを新規作成するAPIですが、RESTの慣習に違反しています。修正してください。",
+    "buggyCode": "@RestController\n@RequestMapping(\"/api/orders\")\nclass OrderController(private val service: OrderService) {\n\n    @GetMapping\n    fun createOrder(@RequestBody request: CreateOrderRequest): Order {\n        return service.create(request)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@GetMapping を @PostMapping に変更する" },
+      { "id": "B", "text": "@GetMapping を @PutMapping に変更する" },
+      { "id": "C", "text": "@GetMapping に method = [RequestMethod.POST] を追加する" },
+      { "id": "D", "text": "@RequestBody を削除してGETのままにする" }
+    ],
+    "correctOptionId": "A",
+    "hint": "REST慣習では、リソースの新規作成にはどのHTTPメソッドを使いますか？",
+    "explanation": "A が正解です。\n\nREST慣習：GET=取得、POST=新規作成、PUT=全体更新、PATCH=部分更新、DELETE=削除。リソース作成にはPOSTを使います。また、GETリクエストにはリクエストボディを持たせるべきではありません。\n\n・B: PUTは既存リソースの全体更新に使います\n・C: @GetMappingにmethodパラメータはありません（コンパイルエラー）\n・D: GETのままにすると意味的に誤りで、ブラウザキャッシュやプロキシの問題も発生します",
+    "difficulty": "EASY",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 20,
+    "title": "@ValueのKotlin文字列エスケープ",
+    "description": "プロパティ値がインジェクトされません。Kotlinの文字列テンプレートとの干渉が原因です。",
+    "buggyCode": "@Service\nclass NotificationService {\n\n    @Value(\"${notification.email.from}\")\n    private lateinit var fromEmail: String\n}",
+    "options": [
+      { "id": "A", "text": "@Value(\"\\${notification.email.from}\")" },
+      { "id": "B", "text": "@Value(\"#{notification.email.from}\")" },
+      { "id": "C", "text": "@Value(\"notification.email.from\")" },
+      { "id": "D", "text": "@Value(\"%{notification.email.from}\")" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Kotlinの文字列では「$」はテンプレート展開に使われます。Springのプロパティプレースホルダーと区別するには？",
+    "explanation": "A が正解です。\n\nKotlinの文字列リテラルでは「${}」が文字列テンプレートとして解釈されます。そのため「${notification.email.from}」はKotlin変数へのアクセスとして解釈され、コンパイルエラーになります。「\\$」とエスケープすることでSpringのプロパティプレースホルダーとして機能します。\n\n・B: 「#{}」はSpEL（Spring Expression Language）の式構文で、プロパティ参照とは異なります\n・C: 波括弧なしの文字列リテラルは単なる文字列になり、プロパティ注入されません\n・D: 「%{}」はSpringのプレースホルダー構文ではありません",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 21,
+    "title": "@ResponseStatusで201 Createdを返す",
+    "description": "リソース作成APIが200 OKを返しています。REST慣習では201 Createdを返すべきです。",
+    "buggyCode": "@RestController\n@RequestMapping(\"/api/posts\")\nclass PostController(private val service: PostService) {\n\n    @PostMapping\n    fun create(@RequestBody request: CreatePostRequest): Post {\n        return service.create(request)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@ResponseStatus(HttpStatus.CREATED) を create() メソッドに追加する" },
+      { "id": "B", "text": "@ResponseStatus(HttpStatus.OK) を追加する" },
+      { "id": "C", "text": "@PostMapping(status = 201) を使う" },
+      { "id": "D", "text": "@RequestMapping に method = [POST], status = CREATED を追加する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Spring MVCでレスポンスのHTTPステータスコードを設定するアノテーションは何ですか？",
+    "explanation": "A が正解です。\n\n@ResponseStatus(HttpStatus.CREATED)をメソッドに付けると、そのエンドポイントのレスポンスが201 Createdになります。REST慣習ではリソース作成成功時には201を返すべきです。\n\n・B: @ResponseStatus(HttpStatus.OK)はデフォルトの動作と変わらず意味がありません\n・C: @PostMappingにはstatusパラメータはありません（コンパイルエラー）\n・D: @RequestMappingにもstatusパラメータはありません",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 22,
+    "title": "@Configurationアノテーションの欠落",
+    "description": "@Beanメソッドが定義されていますが、起動時にビーンが登録されません。原因を修正してください。",
+    "buggyCode": "class CacheConfig {\n\n    @Bean\n    fun cacheManager(): CacheManager {\n        return ConcurrentMapCacheManager(\"users\", \"products\")\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@Configuration を CacheConfig クラスに追加する" },
+      { "id": "B", "text": "@Bean を CacheConfig クラス自体に追加する" },
+      { "id": "C", "text": "@Service を CacheConfig クラスに追加する" },
+      { "id": "D", "text": "@Autowired を cacheManager メソッドに追加する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "@Beanメソッドを持つクラスには、Springに設定クラスとして認識させるアノテーションが必要です。",
+    "explanation": "A が正解です。\n\n@BeanメソッドはSpringの設定クラス（@Configuration）内に定義する必要があります。@Configurationがないとコンポーネントスキャンで検出されず、@Beanメソッドが無視されます。\n\n・B: @Beanはクラスではなくメソッドに付けるアノテーションです\n・C: @Serviceはサービス層のビーンを示すもので、設定クラスには使いません\n・D: @Autowiredはビーンの注入に使い、ビーンの登録には関係ありません",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 23,
+    "title": "privateメソッドへの@Transactional",
+    "description": "トランザクションが期待通りに機能せず、例外発生時にロールバックされません。原因を特定してください。",
+    "buggyCode": "@Service\nclass OrderService(private val repository: OrderRepository) {\n\n    @Transactional\n    private fun saveOrder(order: Order): Order {\n        return repository.save(order)\n    }\n\n    fun placeOrder(request: PlaceOrderRequest): Order {\n        val order = Order(amount = request.amount)\n        return saveOrder(order)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "private を削除して saveOrder を public（またはinternal）にする" },
+      { "id": "B", "text": "@Transactional を placeOrder に移動する" },
+      { "id": "C", "text": "saveOrder に open を追加する" },
+      { "id": "D", "text": "@Transactional(readOnly = true) に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "SpringのAOPプロキシはprivateメソッドをインターセプトできません。",
+    "explanation": "A が正解です。\n\nSpringの@Transactionalはプロキシ経由でトランザクションを管理します。しかしプロキシはprivateメソッドをインターセプトできないため、@Transactionalが無効になります。メソッドをpublic（またはinternal）にする必要があります。\n\n・B: placeOrderに移動すれば正しく動作しますが、saveOrderの@Transactionalは意味を失います\n・C: openはCGLIBプロキシのためのもので、privateメソッドの制限は解消されません\n・D: readOnlyはトランザクション特性の設定で、このバグとは無関係です",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 24,
+    "title": "フィールドインジェクションよりコンストラクタインジェクション",
+    "description": "以下のコードは動作しますが、Kotlinではより良い書き方があります。推奨される修正方法を選んでください。",
+    "buggyCode": "@Service\nclass ReportService {\n\n    @Autowired\n    private lateinit var userRepo: UserRepository\n\n    @Autowired\n    private lateinit var mailService: MailService\n\n    fun generate(id: Long) {\n        val user = userRepo.findById(id).orElseThrow()\n        mailService.send(user.email, \"Report ready\")\n    }\n}",
+    "options": [
+      { "id": "A", "text": "class ReportService(private val userRepo: UserRepository, private val mailService: MailService)" },
+      { "id": "B", "text": "lateinit var を val に変更し @Autowired を維持する" },
+      { "id": "C", "text": "各フィールドに @Qualifier を追加する" },
+      { "id": "D", "text": "@Autowired を @Resource に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Kotlinではコンストラクタインジェクションを使うとvalで宣言でき、テストも書きやすくなります。",
+    "explanation": "A が正解です。\n\nコンストラクタインジェクションはKotlin/Springのベストプラクティスです。メリット: (1) valで不変にできる (2) @Autowiredが不要（単一コンストラクタはSpring 4.3+で自動検出） (3) テスト時にモックの注入が容易 (4) 依存関係が明確\n\n・B: @Autowiredフィールドをvalにするとコンパイルエラーになります（valは宣言時に初期化が必要）\n・C: @Qualifierは複数候補がある場合に使うもので、スタイルとは無関係です\n・D: @ResourceはJava EEの注入アノテーションで、スタイルは変わりません",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 25,
+    "title": "@Scheduledと@EnableScheduling",
+    "description": "スケジュールされたジョブが実行されません。アプリケーションは起動しますが、定期処理が動きません。",
+    "buggyCode": "@Service\nclass CleanupService(private val repository: DataRepository) {\n\n    @Scheduled(fixedRate = 3600000)\n    fun cleanup() {\n        repository.deleteExpired()\n    }\n}\n\n@SpringBootApplication\nclass Application",
+    "options": [
+      { "id": "A", "text": "@EnableScheduling を Application クラスまたは @Configuration クラスに追加する" },
+      { "id": "B", "text": "@Async を cleanup() に追加する" },
+      { "id": "C", "text": "@Scheduled の fixedRate を fixedDelay に変更する" },
+      { "id": "D", "text": "@EventListener(ApplicationReadyEvent::class) に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Springのスケジューリング機能を有効化するためのアノテーションが必要です。",
+    "explanation": "A が正解です。\n\n@Scheduledを機能させるには、設定クラスまたはメインクラスに@EnableSchedulingを追加する必要があります。このアノテーションがないとSpringのスケジューラーが起動せず、@Scheduledは無視されます。\n\n・B: @Asyncは非同期実行のためのもので、スケジューリングとは別機能です（@EnableAsyncも別途必要）\n・C: fixedRateとfixedDelayは実行間隔の計測方法の違いで、動作しない原因ではありません\n・D: @EventListenerはイベント発火時に一度実行されるもので、定期実行とは異なります",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 26,
+    "title": "同一クラス内の@Transactionalメソッド呼び出し",
+    "description": "@Transactionalを付けたメソッドを同じクラスから直接呼び出してもトランザクションが適用されません。",
+    "buggyCode": "@Service\nclass InventoryService(private val repository: InventoryRepository) {\n\n    fun updateStock(productId: Long, qty: Int) {\n        deductStock(productId, qty)\n    }\n\n    @Transactional\n    fun deductStock(productId: Long, qty: Int) {\n        val item = repository.findById(productId).orElseThrow()\n        repository.save(item.copy(stock = item.stock - qty))\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@Transactional を updateStock に移動または追加する" },
+      { "id": "B", "text": "this.deductStock(productId, qty) と明示的に this を付けて呼ぶ" },
+      { "id": "C", "text": "@Transactional(propagation = Propagation.REQUIRES_NEW) に変更する" },
+      { "id": "D", "text": "deductStock を open にする" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Springの@TransactionalはAOPプロキシ経由で機能します。同一クラス内の直接呼び出しはプロキシをバイパスします。",
+    "explanation": "A が正解です。\n\nSpringの@TransactionalはAOPプロキシ（ラッパーオブジェクト）によって実装されます。同一クラス内のメソッドを直接呼び出すとプロキシを通らず、@Transactionalが無効になります。最もシンプルな解決策はupdateStockをトランザクション境界にすることです。\n\n・B: 「this.」を付けても同じオブジェクトを直接参照するため、プロキシは通りません\n・C: 伝播設定を変えてもプロキシバイパスの問題は解決しません\n・D: openにしてもプロキシバイパスの問題は解決しません",
+    "difficulty": "HARD",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 27,
+    "title": "JPA findByIdのOptionalとKotlin",
+    "description": "以下のコードはコンパイルエラーです。JpaRepositoryのfindByIdはKotlinのNull安全型を返しません。",
+    "buggyCode": "@Service\nclass ProductService(private val repository: ProductRepository) {\n\n    fun getProduct(id: Long): Product {\n        return repository.findById(id)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "return repository.findById(id).orElseThrow { NoSuchElementException(\"Product $id not found\") }" },
+      { "id": "B", "text": "return repository.findById(id)!!" },
+      { "id": "C", "text": "return repository.findById(id).get()" },
+      { "id": "D", "text": "return repository.getReferenceById(id)" }
+    ],
+    "correctOptionId": "A",
+    "hint": "findByIdはJavaのOptional<T>を返します。KotlinのNull安全とOptionalは異なる仕組みです。",
+    "explanation": "A が正解です。\n\nJpaRepositoryのfindById()はJavaのOptional<T>を返します。KotlinのNullable型とは異なり、Optionalに「!!」は使えません。orElseThrow{}を使うことで、存在しない場合に意味のある例外メッセージを提供できます。\n\n・B: Optional<T>にKotlinの「!!」演算子は使えません（コンパイルエラー）\n・C: .get()も動作しますが、存在しない場合に「NoSuchElementException」が投げられ、エラーメッセージがありません\n・D: getReferenceById()（旧getOne()）は遅延ロードのため、実際のデータアクセス時にEntityNotFoundExceptionが発生します",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 28,
+    "title": "JPAエンティティにdata classを使う問題",
+    "description": "以下のエンティティでLAZYフェッチが機能しません。Hibernateの遅延ロードとdata classの相性問題が原因です。",
+    "buggyCode": "@Entity\n@Table(name = \"orders\")\ndata class Order(\n    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n    val id: Long = 0,\n\n    @ManyToOne(fetch = FetchType.LAZY)\n    val customer: Customer? = null,\n\n    val amount: Long = 0\n)",
+    "options": [
+      { "id": "A", "text": "data class ではなく通常の class を使う" },
+      { "id": "B", "text": "open data class Order(...) とする" },
+      { "id": "C", "text": "val を var にする" },
+      { "id": "D", "text": "fetch = FetchType.LAZY を FetchType.EAGER に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "HibernateはエンティティのサブクラスをCGLIBで動的生成してプロキシを作ります。data classはそれを妨げます。",
+    "explanation": "A が正解です。\n\nHibernateの遅延ロードはエンティティクラスのプロキシサブクラスを動的生成することで実現します。しかしdata classはfinalなメソッド（equals、hashCode、copy等）を生成するためHibernateがプロキシを正しく作れません。JPAエンティティには通常のclassを使いましょう。\n\n・B: openを付けても、data classが生成するequals/hashCodeはエンティティの同一性と競合し問題が起きます\n・C: varにしても遅延ロードの問題は解決しません\n・D: EAGERに変更すると遅延ロードは不要になりますが、パフォーマンスの問題が生じます（N+1問題のリスク）",
+    "difficulty": "HARD",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 29,
+    "title": "Spring BootのKotlinらしいmain関数",
+    "description": "以下のmain関数はコンパイルエラーです。Kotlinで正しくSpring Bootを起動する方法を選んでください。",
+    "buggyCode": "@SpringBootApplication\nclass KittoApplication\n\nfun main(args: Array<String>) {\n    KittoApplication.run(args)\n}",
+    "options": [
+      { "id": "A", "text": "runApplication<KittoApplication>(*args)" },
+      { "id": "B", "text": "SpringApplication.run(KittoApplication::class.java, *args)" },
+      { "id": "C", "text": "KittoApplication().run(*args)" },
+      { "id": "D", "text": "SpringBootApplication.run(KittoApplication::class.java)" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Spring BootはKotlin向けに専用のrunApplication関数を提供しています。",
+    "explanation": "A が正解です。\n\n「runApplication<KittoApplication>(*args)」はKotlinの型引数を利用したSpring Boot専用の拡張関数で、最もKotlinらしい書き方です。Bも動作しますが、JavaスタイルのClass参照を使っています。\n\n・B: 動作しますが、KotlinではAの書き方が推奨されます\n・C: KittoApplicationにrunメソッドはありません（コンパイルエラー）\n・D: @SpringBootApplicationはアノテーションであり、runメソッドは持ちません（コンパイルエラー）",
+    "difficulty": "EASY",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 30,
+    "title": "@Asyncと@EnableAsync",
+    "description": "非同期メソッドが同期で実行されています。@Asyncが機能していない原因を修正してください。",
+    "buggyCode": "@Service\nclass ReportGeneratorService {\n\n    @Async\n    fun generateAsync(reportId: Long) {\n        println(\"生成中: $reportId\")\n        Thread.sleep(5000)\n    }\n}\n\n@SpringBootApplication\nclass Application",
+    "options": [
+      { "id": "A", "text": "@EnableAsync を Application クラスまたは @Configuration クラスに追加する" },
+      { "id": "B", "text": "@Async を @Scheduled(fixedDelay = 0) に変更する" },
+      { "id": "C", "text": "戻り値の型を CompletableFuture<Unit> にする" },
+      { "id": "D", "text": "generateAsync を open にする" }
+    ],
+    "correctOptionId": "A",
+    "hint": "@Scheduledに@EnableSchedulingが必要なように、@Asyncにも有効化のアノテーションが必要です。",
+    "explanation": "A が正解です。\n\n@Asyncを機能させるには@EnableAsyncが必要です（@Scheduledに@EnableSchedulingが必要なのと同様）。これがないとSpringはメソッドを通常の同期呼び出しとして実行します。\n\n・B: @Scheduledは定期実行用で、@Asyncの代替にはなりません\n・C: CompletableFuture<T>は戻り値がある場合に使いますが、@EnableAsyncがなければ非同期になりません\n・D: openにしてもプロキシの前提として@EnableAsyncが必要です",
+    "difficulty": "MEDIUM",
+    "category": "SPRING_KOTLIN"
+  }
+]

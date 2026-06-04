@@ -44,6 +44,15 @@ const TOOLS: Tool[] = [
     href: "/tools/countdown",
   },
   {
+    icon: "🐛",
+    iconBg: "#EEF2FF",
+    name: "バグ修正ゲーム",
+    desc: "Kotlin & Spring Boot のバグを発見して修正しよう。全30問。",
+    badge: { label: "新着", type: "new" },
+    category: "仕事",
+    href: "/tools/kotlin-quiz",
+  },
+  {
     icon: "🎲",
     iconBg: "#F5F5F5",
     name: "次のツール",
