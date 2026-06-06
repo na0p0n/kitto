@@ -712,5 +712,90 @@
     "explanation": "A が正解です。\n\nThread.sleep()はスレッドを完全にブロックします。suspend関数の中でThread.sleepを使うと、その間コルーチンディスパッチャーのスレッドが占有され、他のコルーチンが実行できなくなります。delay()はスレッドをブロックせず、コルーチンをサスペンドさせるだけなので他のコルーチンが同じスレッドで動き続けられます。\n\n・B: suspend関数でなくなるとコルーチンの恩恵（ノンブロッキング処理）が失われます\n・C: Dispatchers.IOに切り替えることでブロッキングの影響を限定できますが、I/Oスレッドを無駄に占有します。delayを使うほうが正しいです\n・D: yield()は実行権を譲渡しますが、ウェイト（時間待機）の機能はありません",
     "difficulty": "HARD",
     "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 43,
+    "title": "Security設定：requestMatchersの評価順序",
+    "description": "3つのファイルからなるSpring SecurityのWebアプリです。/api/public/health を認証なしで叩くと 401 Unauthorized が返ってきます。SecurityConfig・HealthController・UserControllerを読んで原因を特定してください。",
+    "buggyCode": "// ===== SecurityConfig.kt =====\n@Configuration\n@EnableWebSecurity\nclass SecurityConfig {\n    @Bean\n    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {\n        http.authorizeHttpRequests { auth ->\n            auth\n                .requestMatchers(\"/api/**\").authenticated()\n                .requestMatchers(\"/api/public/**\").permitAll()\n        }\n        return http.build()\n    }\n}\n\n// ===== HealthController.kt =====\n@RestController\n@RequestMapping(\"/api/public\")\nclass HealthController {\n    @GetMapping(\"/health\")\n    fun health() = mapOf(\"status\" to \"UP\")\n}\n\n// ===== UserController.kt =====\n@RestController\n@RequestMapping(\"/api/users\")\nclass UserController(private val userService: UserService) {\n    @GetMapping(\"/{id}\")\n    fun getUser(@PathVariable id: Long): User = userService.find(id)\n}",
+    "options": [
+      { "id": "A", "text": "SecurityConfig.kt で .requestMatchers(\"/api/public/**\").permitAll() を .requestMatchers(\"/api/**\").authenticated() より前に移動する" },
+      { "id": "B", "text": "HealthController に @PermitAll アノテーションを追加する" },
+      { "id": "C", "text": ".requestMatchers(\"/api/public/**\").permitAll() を anyRequest().permitAll() に変更する" },
+      { "id": "D", "text": "@EnableWebSecurity(proxyBeanMethods = false) に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "authorizeHttpRequests の各 requestMatchers ルールは上から順に評価され、最初にマッチしたルールが適用されます。",
+    "explanation": "A が正解です。\n\nSpring Security の authorizeHttpRequests はルールを上から順に評価し、最初にマッチしたルールを適用します。\"/api/**\" は \"/api/public/**\" のパスにもマッチするため、/api/public/health へのリクエストが先に .authenticated() にマッチして認証を要求されます。\n\n修正は2行を入れ替えるだけです:\n    auth\n        .requestMatchers(\"/api/public/**\").permitAll()\n        .requestMatchers(\"/api/**\").authenticated()\n\n・B: Spring Security に @PermitAll アノテーションはありません（Jakarta EE の概念です）\n・C: anyRequest().permitAll() にすると全エンドポイントが認証不要になりセキュリティが崩れます\n・D: proxyBeanMethods はビーンのプロキシ方法に関する設定で、ルール順序とは無関係です",
+    "difficulty": "HARD",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 44,
+    "title": "@Valueプロパティ名タイポによるサイレントバグ",
+    "description": "送信メールの From アドレスが常に fallback@example.com になっています。application.properties には正しい値が設定されているはずなのに…。2つのファイルを見比べてバグを探してください。",
+    "buggyCode": "// ===== application.properties =====\napp.mail.from-address=no-reply@example.com\napp.mail.reply-to=support@example.com\n\n// ===== MailService.kt =====\n@Service\nclass MailService(\n    @Value(\"\\${app.mail.from-adress:fallback@example.com}\")\n    private val fromAddress: String,\n    @Value(\"\\${app.mail.reply-to}\")\n    private val replyTo: String\n) {\n    fun sendWelcome(to: String) {\n        send(from = fromAddress, to = to, subject = \"ようこそ\")\n    }\n\n    private fun send(from: String, to: String, subject: String) {\n        // メール送信処理\n    }\n}",
+    "options": [
+      { "id": "A", "text": "@Value の from-adress というタイポを from-address に修正する" },
+      { "id": "B", "text": "application.properties に app.mail.from-adress=no-reply@example.com を追加してタイポ側に合わせる" },
+      { "id": "C", "text": "@Value の代わりに @ConfigurationProperties(prefix = \"app.mail\") を使う" },
+      { "id": "D", "text": "fromAddress フィールドを lateinit var に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "application.properties のキー名と @Value で参照しているプロパティ名を1文字ずつ見比べてみてください。",
+    "explanation": "A が正解です。\n\n@Value(\"${app.mail.from-adress:fallback@example.com}\") の from-adress はタイポです（正しくは from-address）。Spring は一致するプロパティを見つけられないためデフォルト値の fallback@example.com を使い続けます。デフォルト値が設定されているためアプリは正常起動し、例外も出ないサイレントバグです。修正は @Value 内の1文字修正だけです。\n\n・B: タイポに合わせてプロパティ名を追加する方法でも動きますが、application.properties に意図しないキーが残り設計上好ましくありません\n・C: @ConfigurationProperties はより型安全でよいアプローチですが、問題の根本はタイポなので本質的な修正ではありません\n・D: lateinit var はフィールドインジェクション用の書き方で、コンストラクタインジェクションのこのケースとは無関係です",
+    "difficulty": "HARD",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 45,
+    "title": "@RestControllerAdviceの適用範囲漏れ",
+    "description": "v1 API の ResourceNotFoundException は 404 で返ってきますが、v2 API では 500 Internal Server Error が返ってきます。3ファイルを確認してハンドラーが適用されない理由を見つけてください。",
+    "buggyCode": "// ===== GlobalExceptionHandler.kt =====\n@RestControllerAdvice(basePackages = [\"com.example.api.v1\"])\nclass GlobalExceptionHandler {\n    @ExceptionHandler(ResourceNotFoundException::class)\n    fun handleNotFound(e: ResourceNotFoundException): ResponseEntity<ErrorResponse> =\n        ResponseEntity.status(404).body(ErrorResponse(e.message ?: \"Not found\"))\n}\n\n// ===== v1/UserController.kt (パッケージ: com.example.api.v1) =====\n@RestController\n@RequestMapping(\"/api/v1/users\")\nclass UserController {\n    @GetMapping(\"/{id}\")\n    fun getUser(@PathVariable id: Long): User =\n        userService.find(id) ?: throw ResourceNotFoundException(\"User $id not found\")\n}\n\n// ===== v2/OrderController.kt (パッケージ: com.example.api.v2) =====\n@RestController\n@RequestMapping(\"/api/v2/orders\")\nclass OrderController {\n    @GetMapping(\"/{id}\")\n    fun getOrder(@PathVariable id: Long): Order =\n        orderService.find(id) ?: throw ResourceNotFoundException(\"Order $id not found\")\n}",
+    "options": [
+      { "id": "A", "text": "@RestControllerAdvice の basePackages 指定を削除してすべてのコントローラーを対象にする" },
+      { "id": "B", "text": "GlobalExceptionHandler を com.example.api.v1 パッケージから com.example.api パッケージへ移動する" },
+      { "id": "C", "text": "v2.OrderController に直接 @ExceptionHandler を追加する" },
+      { "id": "D", "text": "@RestControllerAdvice を @ControllerAdvice に変更する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "@RestControllerAdvice の basePackages 属性は、ハンドラーを適用する対象コントローラーのパッケージを絞り込みます。",
+    "explanation": "A が正解です。\n\n@RestControllerAdvice(basePackages = [\"com.example.api.v1\"]) は com.example.api.v1 パッケージのコントローラーにのみ例外ハンドラーを適用します。com.example.api.v2 のコントローラーは対象外のため、ResourceNotFoundException がキャッチされず 500 になります。basePackages を削除すれば全コントローラーに適用されます（アプリ全体で1つの例外ハンドラーを共有するのが一般的です）。\n\n・B: クラスを移動してもパラメーターの basePackages = [\"com.example.api.v1\"] は変わらないため v2 は依然として対象外です\n・C: 個別のコントローラーに @ExceptionHandler を追加する方法は動きますが、処理が重複しメンテナンス性が下がります\n・D: @ControllerAdvice も basePackages パラメーターを持つため、変更しても問題は解決しません",
+    "difficulty": "HARD",
+    "category": "SPRING_ANNOTATIONS"
+  },
+  {
+    "id": 46,
+    "title": "プロファイル名とプロパティファイル名の不一致",
+    "description": "本番環境でアプリを起動すると H2 の URL が使われてしまいます。application.properties に spring.profiles.active=prod と書いたのに、application-production.properties の設定が反映されていません。4ファイルを確認してください。",
+    "buggyCode": "// ===== application.properties =====\nspring.profiles.active=prod\nspring.datasource.url=jdbc:h2:mem:testdb\n\n// ===== application-production.properties =====\nspring.datasource.url=jdbc:postgresql://prod-db:5432/myapp\nspring.datasource.username=prod_user\nspring.datasource.password=secret\n\n// ===== DataSourceConfig.kt =====\n@Configuration\nclass DataSourceConfig {\n    @Value(\"\\${spring.datasource.url}\")\n    private lateinit var url: String\n\n    @PostConstruct\n    fun init() = logger.info(\"DB URL: $url\")\n}\n\n// ===== FeatureConfig.kt =====\n@Configuration\n@Profile(\"prod\")\nclass FeatureConfig {\n    @Bean\n    fun featureFlags() = FeatureFlags(analyticsEnabled = true, betaEnabled = false)\n}",
+    "options": [
+      { "id": "A", "text": "application-production.properties を application-prod.properties に改名する" },
+      { "id": "B", "text": "@Profile(\"prod\") を @Profile(\"production\") に変更する" },
+      { "id": "C", "text": "application.properties の spring.profiles.active=prod を spring.profiles.active=production に変更する" },
+      { "id": "D", "text": "@PropertySource(\"classpath:application-production.properties\") を DataSourceConfig に追加する" }
+    ],
+    "correctOptionId": "A",
+    "hint": "Spring Boot はアクティブプロファイルが prod のとき application-prod.properties というファイル名を探します。",
+    "explanation": "A が正解です。\n\nSpring Boot のプロファイル別プロパティファイルは application-{profile}.properties という命名規則です。spring.profiles.active=prod ならば application-prod.properties を読み込みます。application-production.properties は prod プロファイルでは読み込まれないため設定が反映されません。修正はファイルのリネームだけです。\n\n・B: @Profile(\"prod\") は FeatureConfig にしか影響しません。DataSourceConfig の datasource URL 問題は解決されません\n・C: spring.profiles.active=production にするとファイルは読み込まれますが、今度は @Profile(\"prod\") の FeatureConfig が有効にならなくなります。1箇所直して別の箇所を壊す不完全な修正です\n・D: @PropertySource で明示的に読み込む方法も動きますが、Spring Boot の命名規則を修正するほうがシンプルで正しいアプローチです",
+    "difficulty": "HARD",
+    "category": "SPRING_KOTLIN"
+  },
+  {
+    "id": 47,
+    "title": "@Async + .get()でブロッキング",
+    "description": "メール送信を非同期にしたはずなのに、ユーザー登録 API が毎回 3 秒以上かかります。3つのファイルを確認して、@Async の恩恵が得られていない原因を見つけてください。",
+    "buggyCode": "// ===== EmailService.kt =====\n@Service\nclass EmailService {\n\n    @Async\n    fun sendWelcomeEmail(to: String): CompletableFuture<Unit> {\n        Thread.sleep(3000)  // メール送信の模擬（3秒）\n        logger.info(\"Sent welcome email to $to\")\n        return CompletableFuture.completedFuture(Unit)\n    }\n}\n\n// ===== UserService.kt =====\n@Service\nclass UserService(\n    private val userRepo: UserRepository,\n    private val emailService: EmailService\n) {\n    @Transactional\n    fun register(request: RegisterRequest): User {\n        val user = userRepo.save(User(email = request.email))\n        emailService.sendWelcomeEmail(user.email).get()  // 非同期の結果を待機\n        return user\n    }\n}\n\n// ===== UserController.kt =====\n@RestController\n@RequestMapping(\"/api/users\")\nclass UserController(private val userService: UserService) {\n\n    @PostMapping(\"/register\")\n    fun register(@RequestBody request: RegisterRequest): ResponseEntity<User> {\n        val user = userService.register(request)\n        return ResponseEntity.ok(user)\n    }\n}",
+    "options": [
+      { "id": "A", "text": "UserService.kt の emailService.sendWelcomeEmail(user.email).get() から .get() を削除してfire-and-forgetにする" },
+      { "id": "B", "text": "@Async を @Async(\"emailExecutor\") に変更して専用スレッドプールを割り当てる" },
+      { "id": "C", "text": "sendWelcomeEmail の戻り値型を CompletableFuture<Unit> から Unit に変更する" },
+      { "id": "D", "text": "@Transactional(timeout = 5) を追加して長時間ブロッキングを防ぐ" }
+    ],
+    "correctOptionId": "A",
+    "hint": "CompletableFuture の .get() は結果が返るまで呼び出し元スレッドをブロックします。@Async で別スレッドに投げても .get() で待っては意味がありません。",
+    "explanation": "A が正解です。\n\n@Async はメソッドを別スレッドで非同期に実行しますが、戻り値の CompletableFuture に対して .get() を呼ぶと結果が返るまで呼び出し元スレッドがブロックされます。これでは同期呼び出しと同じです。.get() を削除してfire-and-forget（送信完了を待たずに登録処理を返す）にすることで、ユーザー登録は即座にレスポンスを返せます。\n\n・B: 専用スレッドプールは運用上の最適化ですが、.get() でブロックしている根本原因は解決しません\n・C: Unit を返すメソッドに @Async を付けると CompletableFuture<Void> として扱われます。呼び出し側で .get() を呼ばなければ動きますが、UserService.kt の .get() 呼び出しを修正しないと変わりません\n・D: timeout はトランザクションが長時間かかった場合に例外を投げるもので、ブロッキングを非同期に変えるものではありません",
+    "difficulty": "HARD",
+    "category": "SPRING_KOTLIN"
   }
 ]

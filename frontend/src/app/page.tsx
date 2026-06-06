@@ -47,7 +47,7 @@ const TOOLS: Tool[] = [
     icon: "🐛",
     iconBg: "#EEF2FF",
     name: "バグ修正ゲーム",
-    desc: "Kotlin & Spring Boot のバグを発見して修正しよう。全30問。",
+    desc: "Kotlin & Spring Boot のバグを発見して修正しよう。全47問。",
     badge: { label: "新着", type: "new" },
     category: "仕事",
     href: "/tools/kotlin-quiz",
